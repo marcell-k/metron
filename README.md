@@ -8,8 +8,8 @@
 - [x] Skewness and kurtosis
 
 # 2. Distribution and Frequency
-- [ ] Histograms with configurable bins
-- [ ] Frequency tables
+- [x] Histograms with configurable bins
+- [x] Frequency tables
 - [ ] Empirical cumulative distribution function (ECDF)
 - [ ] Z-scores and standardization
 - [ ] Outlier detection using IQR or MAD

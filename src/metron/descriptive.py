@@ -1,11 +1,11 @@
 """Descriptive Statistics."""
 
-import math
 from collections import Counter
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from metron.errors import ParseError
+from metron.utils import r
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -123,11 +123,6 @@ def descriptive_statistics[T: int | float](data: Iterable[T]) -> Stats:
         r(skewness),
         r(kurtosis),
     )
-
-
-def r(value: float, sig: int = 3) -> float:
-    """Round."""
-    return value if value == 0 else round(value, sig - 1 - math.floor(math.log10(abs(value))))
 
 
 def _calculate_mad[T: int | float](values: Iterable[T], median: T) -> float:

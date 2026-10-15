@@ -1,3 +1,4 @@
+# ruff: noqa: T201
 """Entry."""
 
 import sys
@@ -7,7 +8,7 @@ from pathlib import Path
 import typer
 
 from metron.descriptive import descriptive_statistics
-from metron.distribution import draw_histogram
+from metron.distribution import draw_histogram, frequency_table
 from metron.errors import ParseError
 from metron.utils import clean_data
 
@@ -40,6 +41,8 @@ def main(method: Method, source: str | None = None, sep: str = ",") -> None:
         case Method.DISTRIBUTION:
             print(draw_histogram(data, 40))
             print(draw_histogram(data, 20, horizontal=False))
+            table = frequency_table(data)
+            print(table)
             return
         case _:
             return
