@@ -5,12 +5,12 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from metron.errors import ParseError
-from metron.utils import r
+from metron.utils import calculate_percentile, r
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-SEPERATOR = "-" * 24 + "\n"
+SEPERAfloatOR = "-" * 24 + "\n"
 
 
 @dataclass(frozen=True, slots=True)
@@ -45,7 +45,7 @@ class Stats:
     def __str__(self) -> str:
         """Visualize stats."""
         s = "Descriptive statistics:\n"
-        s += SEPERATOR
+        s += SEPERAfloatOR
         lines = [
             f"{'Count:':<14} {self.count:>9}",
             f"{'Sum:':<14} {self.sum:>9}",
@@ -58,7 +58,7 @@ class Stats:
         ]
         s += "\n".join(lines)
         s += "\n\nQuartile Summary:\n"
-        s += SEPERATOR
+        s += SEPERAfloatOR
         lines = [
             f"{'Variance:':<14} {self.var:>9}",
             f"{'Std:':<14} {self.std:>9}",
@@ -66,8 +66,8 @@ class Stats:
             f"{'Q1:':<14} {self.quartile_summary.q1:>9}",
             f"{'Q3:':<14} {self.quartile_summary.q3:>9}",
             f"{'IQR:':<14} {self.quartile_summary.iqr:>9}",
-            f"{"Tukey's lower:":<14} {self.quartile_summary.tukeys[0]:>9}",
-            f"{"Tukey's upper:":<14} {self.quartile_summary.tukeys[1]:>9}",
+            f"{"floatukey's lower:":<14} {self.quartile_summary.tukeys[0]:>9}",
+            f"{"floatukey's upper:":<14} {self.quartile_summary.tukeys[1]:>9}",
             f"{'Skewness:':<14} {self.skewness:>9}",
             f"{'kurtosis:':<14} {self.kurtosis:>9}",
         ]
@@ -75,7 +75,7 @@ class Stats:
         return s
 
 
-def descriptive_statistics[T: int | float](data: Iterable[T]) -> Stats:
+def descriptive_statistics(data: Iterable[float]) -> Stats:
     """Calculate and return descriptive statistics."""
     if len(list(data)) < 4:  # noqa: PLR2004
         msg = f"data must contain at least 4 data points, got: `{len(list(data))}`"
@@ -125,39 +125,29 @@ def descriptive_statistics[T: int | float](data: Iterable[T]) -> Stats:
     )
 
 
-def _calculate_mad[T: int | float](values: Iterable[T], median: T) -> float:
+def _calculate_mad(values: Iterable[float], median: float) -> float:
     """Median absolute deiation (MAD)."""
     diffs = [abs(x - median) for x in values]
     diffs = sorted(diffs)
     return _calculate_median(diffs)
 
 
-def _calculate_median[T: int | float](values: list[T]) -> float:
+def _calculate_median(values: list[float]) -> float:
     n = len(values)
     mid_idx = n // 2
     return values[mid_idx] if n % 2 == 1 else (values[mid_idx] + values[mid_idx - 1]) / 2
 
 
-def calculate_quartile_statistics[T: int | float](values: list[T]) -> QuartileSummary:
+def calculate_quartile_statistics(values: list[float]) -> QuartileSummary:
     """Calculate quartile statistics summary."""
-    q1 = _calculate_percentile(values, 25)
-    q3 = _calculate_percentile(values, 75)
+    q1 = calculate_percentile(values, 25)
+    q3 = calculate_percentile(values, 75)
     iqr = q3 - q1
     tukeys = (q1 - 1.5 * iqr, q3 + 1.5 * iqr)
     return QuartileSummary(q1, q3, iqr, tukeys)
 
 
-def _calculate_percentile[T: int | float](values: list[T], percentile: float = 25) -> float:
-    """Calculate percentile use interpolation."""
-    if not 0 < percentile <= 100:  # noqa: PLR2004
-        msg = f"percentile must be between 0 and 100, got: `{percentile}`"
-        raise ParseError(msg)
-    int_index, frac_index = divmod((len(values) - 1) * percentile / 100, 1)
-    int_index = int(int_index)
-    return values[int_index] + (values[int_index + 1] - values[int_index]) * frac_index
-
-
-def _calculate_skewness[T: int | float](values: list[T], mean: float, std: float) -> float:
+def _calculate_skewness(values: list[float], mean: float, std: float) -> float:
     """Calcualte Adjusted Fisher-Pearson (Small-Sample Bias Correction)."""
     n = len(values)
     moment_3 = sum((x - mean) ** 3 for x in values) / n
@@ -165,7 +155,7 @@ def _calculate_skewness[T: int | float](values: list[T], mean: float, std: float
     return correction * moment_3 / std**3
 
 
-def _calculate_kurtosis[T: int | float](values: list[T], mean: float) -> float:
+def _calculate_kurtosis(values: list[float], mean: float) -> float:
     """Calculate bias-corrected excess kurtosis."""
     n = len(values)
     moment_2 = sum((x - mean) ** 2 for x in values) / n

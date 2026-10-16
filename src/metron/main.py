@@ -8,8 +8,9 @@ from pathlib import Path
 import typer
 
 from metron.descriptive import descriptive_statistics
-from metron.distribution import draw_histogram, frequency_table
+from metron.distribution import calculate_ecdf, frequency_table
 from metron.errors import ParseError
+from metron.plot import draw_histogram
 from metron.utils import clean_data
 
 
@@ -39,10 +40,11 @@ def main(method: Method, source: str | None = None, sep: str = ",") -> None:
             stats = descriptive_statistics(data)
             print(stats)
         case Method.DISTRIBUTION:
-            print(draw_histogram(data, 40))
-            print(draw_histogram(data, 20, horizontal=False))
+            print(draw_histogram(data, 30))
+            print(draw_histogram(data, 10, horizontal=False))
             table = frequency_table(data)
             print(table)
+            print(calculate_ecdf(data))
             return
         case _:
             return
