@@ -66,8 +66,8 @@ class Stats:
             f"{'Q1:':<14} {self.quartile_summary.q1:>9}",
             f"{'Q3:':<14} {self.quartile_summary.q3:>9}",
             f"{'IQR:':<14} {self.quartile_summary.iqr:>9}",
-            f"{"floatukey's lower:":<14} {self.quartile_summary.tukeys[0]:>9}",
-            f"{"floatukey's upper:":<14} {self.quartile_summary.tukeys[1]:>9}",
+            f"{"tukey's lower:":<14} {self.quartile_summary.tukeys[0]:>9}",
+            f"{"tukey's upper:":<14} {self.quartile_summary.tukeys[1]:>9}",
             f"{'Skewness:':<14} {self.skewness:>9}",
             f"{'kurtosis:':<14} {self.kurtosis:>9}",
         ]

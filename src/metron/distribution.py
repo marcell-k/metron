@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 from metron.errors import MetronError
 from metron.plot import PlotType, plot
-from metron.utils import bin_values, r
+from metron.utils import bin_values, fmt, r
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator
@@ -53,7 +53,7 @@ class FrequencyTable:
         separator = "+" + "+".join("-" * width for _ in columns) + "+"
         s += header + "\n"
         rows = [
-            "|" + "|".join(str(value).center(width) for value in row) + "|"
+            "|" + "|".join(fmt(value).center(width) for value in row) + "|"
             for row in zip(*(values for _, values in columns), strict=True)
         ]
         return "\n".join([header, separator, *rows])
@@ -98,3 +98,7 @@ def calculate_zscore(values: Iterable[float]) -> str:
     step = round(2 * dist / len(values), 2)
     y = [round(-dist + step * i, 1) for i in range(len(values))]
     return plot("Z-score", values, y, plot_type=PlotType.LINE)
+
+
+def outlier_detection(values: Iterable[float]):
+    """Outlier detection."""

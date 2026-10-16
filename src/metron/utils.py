@@ -6,6 +6,13 @@ lazy from collections.abc import Iterable
 from metron.errors import ParseError
 
 
+def fmt(value: object) -> str:
+    """Format cell. Floats to 2 decimals."""
+    if isinstance(value, float):
+        return f"{value:.2f}"
+    return str(value)
+
+
 def clean_data(line: str, sep: str = ",") -> list[float]:
     """Split and clean data by seperator."""
     return [float(x) for x in line.split(sep=sep)]

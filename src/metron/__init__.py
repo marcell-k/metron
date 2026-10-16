@@ -1,5 +1,5 @@
-"""Entry point."""
+"""Metron."""
 
-from .main import main
+from importlib.metadata import version
 
-__all__ = ["main"]
+__version__ = version("metron")

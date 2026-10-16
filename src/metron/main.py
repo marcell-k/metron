@@ -1,55 +1,21 @@
-# ruff: noqa: T201
 """Entry."""
 
 import sys
-from enum import StrEnum
-from pathlib import Path
 
 import typer
 
-from metron.descriptive import descriptive_statistics
-from metron.distribution import calculate_ecdf, calculate_zscore, frequency_table
+from metron.cli import app
 from metron.errors import ParseError
-from metron.plot import draw_histogram
-from metron.utils import clean_data
 
 
-class Method(StrEnum):
-    """Types."""
-
-    DESCRIPTIVE = "descriptive"
-    DISTRIBUTION = "distribution"
-    RELATIONSHIP = "relationship"
-    PROBABILITY = "probability"
-    INFERENCE = "inference"
-
-
-# NOTE: ``input`` can be a file or raw data
-def main(method: Method, source: str | None = None, sep: str = ",") -> None:
+def main() -> None:
     """Entry point."""
-    if source is None:
-        raw = sys.stdin.read()
-    elif Path(source).exists():
-        raw = Path(source).read_text()
-    else:
-        msg = "error in reading"
-        raise ParseError(msg)
-    data = clean_data(raw, sep)
-    match method:
-        case Method.DESCRIPTIVE:
-            stats = descriptive_statistics(data)
-            print(stats)
-        case Method.DISTRIBUTION:
-            print(draw_histogram(data, 30))
-            print(draw_histogram(data, 10, horizontal=False))
-            table = frequency_table(data)
-            print(table)
-            print(calculate_ecdf(data))
-            print(calculate_zscore(data))
-            return
-        case _:
-            return
+    try:
+        app()
+    except ParseError as e:
+        typer.echo(f"error: {e}", err=True)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
-    typer.run(main)
+    main()

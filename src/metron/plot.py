@@ -66,13 +66,16 @@ def render(
 
 
 def draw_histogram(
-    values: Iterable[float], size: int = 40, nmb_bins: int | None = None, *, horizontal: bool = True
+    values: Iterable[float], nmb_bins: int | None = None, size: int = 40, *, horizontal: bool = True
 ) -> str:
     """Draw histogram."""
     data = sorted(values)
+    if not horizontal:
+        size //= 2
     bins, step = bin_values(data, nmb_bins)
     labels = [str(r(data[0] + step * k)) for k in bins]
-    chart = render(bins, size, horizontal=horizontal, labels=labels)
+    length = size if horizontal else max(size // 2, 1)
+    chart = render(bins, length, horizontal=horizontal, labels=labels)
     return f"{chart}\nRange: ({data[0]}, {data[-1]})   Bin width: {step:.4g}"
 
 
