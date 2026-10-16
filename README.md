@@ -10,7 +10,7 @@
 # 2. Distribution and Frequency
 - [x] Histograms with configurable bins
 - [x] Frequency tables
-- [ ] Empirical cumulative distribution function (ECDF)
+- [x] Empirical cumulative distribution function (ECDF)
 - [ ] Z-scores and standardization
 - [ ] Outlier detection using IQR or MAD
 - [ ] Normalization and ranking

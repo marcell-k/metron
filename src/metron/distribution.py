@@ -1,5 +1,6 @@
 """Distribution and frequency."""
 
+from bisect import bisect_right
 from dataclasses import dataclass, fields
 from typing import TYPE_CHECKING
 
@@ -76,11 +77,8 @@ def frequency_table(values: Iterable[float], nmb_bins: int | None = None) -> Fre
 
 
 def calculate_ecdf(values: Iterable[float]) -> str:
-    """Calculate Empricial distribution function (ECDF)."""
+    """Calculate empirical cumulative distribution function (ECDF)."""
     values = sorted(values)
-    out = [0] * len(values)
-    for i in range(1, len(values)):
-        if values[i] > values[i - 1]:
-            out[i] = out[i - 1] + 1
-
-    return plot(out, plot_type=PlotType.LINE)
+    n = len(values)
+    out = [bisect_right(values, v) / n for v in values]
+    return plot(values, out, plot_type=PlotType.LINE)
