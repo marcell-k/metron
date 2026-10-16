@@ -1,5 +1,6 @@
 """Distribution and frequency."""
 
+import math
 from bisect import bisect_right
 from dataclasses import dataclass, fields
 from typing import TYPE_CHECKING
@@ -81,4 +82,19 @@ def calculate_ecdf(values: Iterable[float]) -> str:
     values = sorted(values)
     n = len(values)
     out = [bisect_right(values, v) / n for v in values]
-    return plot(values, out, plot_type=PlotType.LINE)
+    return plot("ECDF", values, out, plot_type=PlotType.LINE)
+
+
+def calculate_zscore(values: Iterable[float]) -> str:
+    """Calculate z-score and plot it."""
+    values = list(values)
+    out = [0] * len(values)
+    mean = sum(values) / len(values)
+    var = sum([(x - mean) ** 2 for x in values]) / len(values)
+    std = var**0.5
+    for i in range(len(values)):
+        out[i] = (values[i] - mean) / std
+    dist = max(math.ceil(max(out)), math.ceil(abs(min(out))))
+    step = round(2 * dist / len(values), 2)
+    y = [round(-dist + step * i, 1) for i in range(len(values))]
+    return plot("Z-score", values, y, plot_type=PlotType.LINE)

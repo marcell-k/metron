@@ -8,7 +8,7 @@ from pathlib import Path
 import typer
 
 from metron.descriptive import descriptive_statistics
-from metron.distribution import calculate_ecdf, frequency_table
+from metron.distribution import calculate_ecdf, calculate_zscore, frequency_table
 from metron.errors import ParseError
 from metron.plot import draw_histogram
 from metron.utils import clean_data
@@ -45,6 +45,7 @@ def main(method: Method, source: str | None = None, sep: str = ",") -> None:
             table = frequency_table(data)
             print(table)
             print(calculate_ecdf(data))
+            print(calculate_zscore(data))
             return
         case _:
             return

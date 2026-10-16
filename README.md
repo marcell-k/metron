@@ -11,7 +11,7 @@
 - [x] Histograms with configurable bins
 - [x] Frequency tables
 - [x] Empirical cumulative distribution function (ECDF)
-- [ ] Z-scores and standardization
+- [x] Z-score
 - [ ] Outlier detection using IQR or MAD
 - [ ] Normalization and ranking
 

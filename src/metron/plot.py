@@ -1,5 +1,6 @@
 """Terminal plotting."""
 
+from dataclasses import dataclass
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
@@ -9,6 +10,19 @@ if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
 
 BAR = "█"
+
+
+@dataclass(frozen=True, slots=True)
+class Config:
+    """Global config."""
+
+    plot_width: int = 60
+    plot_height: int = 17
+
+
+config = Config()
+PLOT_WIDTH = config.plot_width
+PLOT_HEIGHT = config.plot_height
 
 
 class PlotType(StrEnum):
@@ -62,7 +76,9 @@ def draw_histogram(
     return f"{chart}\nRange: ({data[0]}, {data[-1]})   Bin width: {step:.4g}"
 
 
-def draw_line(x: Sequence[float], y: Sequence[float], width: int = 60, height: int = 17) -> str:
+def draw_line(
+    x: Sequence[float], y: Sequence[float], width: int = PLOT_WIDTH, height: int = PLOT_HEIGHT
+) -> str:
     """Draw line plot. One column per char, linear interpolation between points."""
     pairs = sorted(zip(x, y, strict=True))
     if not pairs:
@@ -105,15 +121,15 @@ def draw_line(x: Sequence[float], y: Sequence[float], width: int = 60, height: i
 
 
 def plot(
+    title: str,
     x: Sequence[float],
     y: Sequence[float] | None = None,
     plot_type: PlotType = PlotType.HISTOGRAM,
-    width: int = 60,
-    height: int = 17,
 ) -> str:
     """Dispatch by plot type. Histogram ignore `y`."""
+    s = "\n" + title.center(PLOT_WIDTH) + "\n"
     if plot_type == PlotType.HISTOGRAM:
-        return draw_histogram(x, size=width)
+        return s + draw_histogram(x, size=PLOT_WIDTH) + "\n"
     if y is None:
         y = list(range(len(x)))
-    return draw_line(x, y, width, height)
+    return s + draw_line(x, y, PLOT_WIDTH, PLOT_HEIGHT) + "\n"
