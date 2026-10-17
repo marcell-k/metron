@@ -21,8 +21,8 @@ class Config:
 
 
 config = Config()
-PLOT_WIDTH = config.plot_width
-PLOT_HEIGHT = config.plot_height
+WIDTH = config.plot_width
+HEIGHT = config.plot_height
 
 
 class PlotType(StrEnum):
@@ -30,6 +30,24 @@ class PlotType(StrEnum):
 
     HISTOGRAM = "histogram"
     LINE = "line"
+    SCATTER = "scatter"
+
+
+def _frame(canvas: list[list[str]], bounds: tuple[float, float, float, float]) -> str:
+    """Add y labels, x axis, x labels to canvas. `bounds` = (min_x, max_x, min_y, max_y)."""
+    min_x, max_x, min_y, max_y = bounds
+    span_y = (max_y - min_y) or 1
+    labels = [
+        f"{max_y - span_y * i / max(HEIGHT - 1, 1):.4g}" if i % 2 == 0 or i == HEIGHT - 1 else ""
+        for i in range(HEIGHT)
+    ]
+    pad = max(map(len, labels))
+    lines = [f"{label:>{pad}}│{''.join(row)}" for label, row in zip(labels, canvas, strict=True)]
+    lines.append(" " * pad + "└" + "─" * WIDTH)
+    lo, hi = f"{min_x:.4g}", f"{max_x:.4g}"
+    gap = max(WIDTH - len(lo) - len(hi), 1)
+    lines.append(" " * (pad + 1) + lo + " " * gap + hi)
+    return "\n".join(lines)
 
 
 def render(
@@ -80,7 +98,7 @@ def draw_histogram(
 
 
 def draw_line(
-    x: Sequence[float], y: Sequence[float], width: int = PLOT_WIDTH, height: int = PLOT_HEIGHT
+    x: Sequence[float], y: Sequence[float], width: int = WIDTH, height: int = HEIGHT
 ) -> str:
     """Draw line plot. One column per char, linear interpolation between points."""
     pairs = sorted(zip(x, y, strict=True))
@@ -110,17 +128,26 @@ def draw_line(
         row = min(max(round((y_val - min_y) / span_y * (height - 1)), 0), height - 1)
         canvas[height - 1 - row][col] = "*"
 
-    labels = [
-        f"{max_y - span_y * i / max(height - 1, 1):.4g}" if i % 2 == 0 or i == height - 1 else ""
-        for i in range(height)
-    ]
-    pad = max(map(len, labels))
-    lines = [f"{label:>{pad}}│{''.join(row)}" for label, row in zip(labels, canvas, strict=True)]
-    lines.append(" " * pad + "└" + "─" * width)
-    lo, hi = f"{min_x:.4g}", f"{max_x:.4g}"
-    gap = max(width - len(lo) - len(hi), 1)
-    lines.append(" " * (pad + 1) + lo + " " * gap + hi)
-    return "\n".join(lines)
+    return _frame(canvas, (min_x, max_x, min_y, max_y))
+
+
+def draw_scatter(x: Sequence[float], y: Sequence[float]) -> str:
+    """Draw scatter plot. One char per point, no line between."""
+    if not x:
+        msg = "No values to plot."
+        raise ValueError(msg)
+    min_x, max_x = min(x), max(x)
+    min_y, max_y = min(y), max(y)
+    span_x = (max_x - min_x) or 1
+    span_y = (max_y - min_y) or 1
+
+    canvas = [[" "] * WIDTH for _ in range(HEIGHT)]
+    for px, py in zip(x, y, strict=True):
+        col = round((px - min_x) / span_x * (WIDTH - 1))
+        row = round((py - min_y) / span_y * (HEIGHT - 1))
+        canvas[HEIGHT - 1 - row][col] = "*"
+
+    return _frame(canvas, (min_x, max_x, min_y, max_y))
 
 
 def plot(
@@ -130,9 +157,11 @@ def plot(
     plot_type: PlotType = PlotType.HISTOGRAM,
 ) -> str:
     """Dispatch by plot type. Histogram ignore `y`."""
-    s = "\n" + title.center(PLOT_WIDTH) + "\n"
+    s = "\n" + title.center(WIDTH) + "\n"
     if plot_type == PlotType.HISTOGRAM:
-        return s + draw_histogram(x, size=PLOT_WIDTH) + "\n"
+        return s + draw_histogram(x, size=WIDTH) + "\n"
     if y is None:
         y = list(range(len(x)))
-    return s + draw_line(x, y, PLOT_WIDTH, PLOT_HEIGHT) + "\n"
+    if plot_type == PlotType.SCATTER:
+        return s + draw_scatter(x, y) + "\n"
+    return s + draw_line(x, y, WIDTH, HEIGHT) + "\n"
