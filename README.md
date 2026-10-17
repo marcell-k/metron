@@ -13,7 +13,6 @@
 - [x] Empirical cumulative distribution function (ECDF)
 - [x] Z-score
 - [x] Outlier detection using IQR or MAD
-- [ ] Normalization and ranking
 
 # 3. Relationships Between Variables
 - [ ] Covariance

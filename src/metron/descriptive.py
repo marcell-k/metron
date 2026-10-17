@@ -5,10 +5,10 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from metron.errors import ParseError
-from metron.utils import calculate_percentile, r
+from metron.utils import calculate_percentile, calculate_std, r
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Sequence
 
 Seperator = "-" * 24 + "\n"
 
@@ -75,12 +75,11 @@ class Stats:
         return s
 
 
-def descriptive_statistics(data: Iterable[float]) -> Stats:
+def descriptive_statistics(data: Sequence[float]) -> Stats:
     """Calculate and return descriptive statistics."""
     if len(list(data)) < 4:  # noqa: PLR2004
         msg = f"data must contain at least 4 data points, got: `{len(list(data))}`"
         raise ParseError(msg)
-    data = sorted(data)
     total = 0
     n = len(data)
     minimum = data[0]
@@ -94,8 +93,8 @@ def descriptive_statistics(data: Iterable[float]) -> Stats:
     mode = Counter(data).most_common()[0][0]
     mean = total / n
 
-    var = sum([(x - mean) ** 2 for x in data]) / n
-    std = var**0.5
+    std = calculate_std(data)
+    var = std**2
     median, mad = _calculate_mad(data)
     quartile_summary = calculate_quartile_statistics(data)
     skewness = round(_calculate_skewness(data, mean, std), 3)
@@ -124,7 +123,7 @@ def descriptive_statistics(data: Iterable[float]) -> Stats:
     )
 
 
-def _calculate_mad(values: Iterable[float]) -> tuple[float, float]:
+def _calculate_mad(values: Sequence[float]) -> tuple[float, float]:
     """Median absolute deiation (MAD)."""
     values = sorted(values)
     median = _calculate_median(values)
@@ -133,13 +132,13 @@ def _calculate_mad(values: Iterable[float]) -> tuple[float, float]:
     return median, _calculate_median(diffs)
 
 
-def _calculate_median(values: list[float]) -> float:
+def _calculate_median(values: Sequence[float]) -> float:
     n = len(values)
     mid_idx = n // 2
     return values[mid_idx] if n % 2 == 1 else (values[mid_idx] + values[mid_idx - 1]) / 2
 
 
-def calculate_quartile_statistics(values: list[float]) -> QuartileSummary:
+def calculate_quartile_statistics(values: Sequence[float]) -> QuartileSummary:
     """Calculate quartile statistics summary."""
     q1 = calculate_percentile(values, 25)
     q3 = calculate_percentile(values, 75)
@@ -148,7 +147,7 @@ def calculate_quartile_statistics(values: list[float]) -> QuartileSummary:
     return QuartileSummary(q1, q3, iqr, tukeys)
 
 
-def _calculate_skewness(values: list[float], mean: float, std: float) -> float:
+def _calculate_skewness(values: Sequence[float], mean: float, std: float) -> float:
     """Calcualte Adjusted Fisher-Pearson (Small-Sample Bias Correction)."""
     n = len(values)
     moment_3 = sum((x - mean) ** 3 for x in values) / n
@@ -156,7 +155,7 @@ def _calculate_skewness(values: list[float], mean: float, std: float) -> float:
     return correction * moment_3 / std**3
 
 
-def _calculate_kurtosis(values: list[float], mean: float) -> float:
+def _calculate_kurtosis(values: Sequence[float], mean: float) -> float:
     """Calculate bias-corrected excess kurtosis."""
     n = len(values)
     moment_2 = sum((x - mean) ** 2 for x in values) / n

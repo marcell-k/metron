@@ -1,9 +1,12 @@
 """Utils."""
 
 import math
-lazy from collections.abc import Iterable
+from typing import TYPE_CHECKING
 
 from metron.errors import ParseError
+
+if TYPE_CHECKING:
+    from collections.abc import Collection, Sequence
 
 
 def fmt(value: object) -> str:
@@ -23,7 +26,7 @@ def r(value: float, sig: int = 3) -> float:
     return value if value == 0 else round(value, sig - 1 - math.floor(math.log10(abs(value))))
 
 
-def calculate_percentile(values: list[float], percentile: float = 25) -> float:
+def calculate_percentile(values: Sequence[float], percentile: float = 25) -> float:
     """Calculate percentile use interpolation."""
     if not 0 < percentile <= 100:  # noqa: PLR2004
         msg = f"percentile must be between 0 and 100, got: `{percentile}`"
@@ -31,6 +34,13 @@ def calculate_percentile(values: list[float], percentile: float = 25) -> float:
     int_index, frac_index = divmod((len(values) - 1) * percentile / 100, 1)
     int_index = int(int_index)
     return values[int_index] + (values[int_index + 1] - values[int_index]) * frac_index
+
+
+def calculate_std(values: Collection[float]) -> float:
+    """Calculate std."""
+    mean = sum(values) / len(values)
+    var = sum((x - mean) ** 2 for x in values) / len(values)
+    return var**0.5
 
 
 # ----- histogram binning -----
@@ -53,7 +63,7 @@ def bin_layout(values: list[float], nmb_bins: int | None) -> tuple[int, float]:
 
 
 def bin_values(
-    values: Iterable[float], nmb_bins: int | None = None
+    values: Sequence[float], nmb_bins: int | None = None
 ) -> tuple[dict[int, int], float]:
     """Count values per bin. Return (bins, step)."""
     data = sorted(values)
