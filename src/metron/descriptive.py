@@ -10,7 +10,7 @@ from metron.utils import calculate_percentile, r
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-SEPERAfloatOR = "-" * 24 + "\n"
+Seperator = "-" * 24 + "\n"
 
 
 @dataclass(frozen=True, slots=True)
@@ -45,7 +45,7 @@ class Stats:
     def __str__(self) -> str:
         """Visualize stats."""
         s = "Descriptive statistics:\n"
-        s += SEPERAfloatOR
+        s += Seperator
         lines = [
             f"{'Count:':<14} {self.count:>9}",
             f"{'Sum:':<14} {self.sum:>9}",
@@ -58,7 +58,7 @@ class Stats:
         ]
         s += "\n".join(lines)
         s += "\n\nQuartile Summary:\n"
-        s += SEPERAfloatOR
+        s += Seperator
         lines = [
             f"{'Variance:':<14} {self.var:>9}",
             f"{'Std:':<14} {self.std:>9}",
@@ -93,11 +93,10 @@ def descriptive_statistics(data: Iterable[float]) -> Stats:
     data_range = maximum - minimum
     mode = Counter(data).most_common()[0][0]
     mean = total / n
-    median = _calculate_median(data)
 
     var = sum([(x - mean) ** 2 for x in data]) / n
     std = var**0.5
-    mad = _calculate_mad(data, median)
+    median, mad = _calculate_mad(data)
     quartile_summary = calculate_quartile_statistics(data)
     skewness = round(_calculate_skewness(data, mean, std), 3)
     kurtosis = round(_calculate_kurtosis(data, mean), 3)
@@ -125,11 +124,13 @@ def descriptive_statistics(data: Iterable[float]) -> Stats:
     )
 
 
-def _calculate_mad(values: Iterable[float], median: float) -> float:
+def _calculate_mad(values: Iterable[float]) -> tuple[float, float]:
     """Median absolute deiation (MAD)."""
+    values = sorted(values)
+    median = _calculate_median(values)
     diffs = [abs(x - median) for x in values]
     diffs = sorted(diffs)
-    return _calculate_median(diffs)
+    return median, _calculate_median(diffs)
 
 
 def _calculate_median(values: list[float]) -> float:

@@ -12,7 +12,7 @@
 - [x] Frequency tables
 - [x] Empirical cumulative distribution function (ECDF)
 - [x] Z-score
-- [ ] Outlier detection using IQR or MAD
+- [x] Outlier detection using IQR or MAD
 - [ ] Normalization and ranking
 
 # 3. Relationships Between Variables
