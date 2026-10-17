@@ -16,6 +16,7 @@ from metron.distribution import (
 )
 from metron.errors import ParseError
 from metron.plot import draw_histogram
+from metron.relationship import analyze_relationship
 from metron.utils import clean_data
 
 app = typer.Typer(no_args_is_help=True)
@@ -82,3 +83,9 @@ def outlier(
 ) -> None:
     """Outlier detection method can be `iqr` or `mad`."""
     typer.echo(outlier_detection(load(source, sep), method))
+
+
+@app.command()
+def relationship(var1: Source = None, var2: Source = None, sep: Sep = ",") -> None:
+    """Frequency table."""
+    typer.echo(analyze_relationship(load(var1, sep), load(var2, sep)))

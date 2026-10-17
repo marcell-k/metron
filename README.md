@@ -15,10 +15,10 @@
 - [x] Outlier detection using IQR or MAD
 
 # 3. Relationships Between Variables
-- [ ] Covariance
-- [ ] Pearson and Spearman rank correlation
-- [ ] Simple linear regression
-- [ ] Residuals and coefficient of determination (R²)
+- [x] Covariance
+- [x] Pearson and Spearman rank correlation
+- [x] Simple linear regression
+- [x] Residuals and coefficient of determination (R²)
 
 # 4. Probability Distributions
 - [ ] Normal (Gaussian) distribution
