@@ -93,17 +93,20 @@ def calculate_ecdf(values: Iterable[float]) -> str:
 
 def calculate_zscore(values: Iterable[float]) -> str:
     """Calculate z-score and plot it."""
+    z_threshold = 3
     values = list(values)
-    out = [0] * len(values)
+    std = calculate_std(values)
+    if std == 0:
+        msg = "std must not be above 0"
+        raise MetronError(msg)
     mean = sum(values) / len(values)
-    var = sum([(x - mean) ** 2 for x in values]) / len(values)
-    std = var**0.5
-    for i in range(len(values)):
-        out[i] = (values[i] - mean) / std
-    dist = max(math.ceil(max(out)), math.ceil(abs(min(out))))
-    step = round(2 * dist / len(values), 2)
-    y = [round(-dist + step * i, 1) for i in range(len(values))]
-    return plot("Z-score", values, y, plot_type=PlotType.LINE)
+    zscores = [(x - mean) / std for x in values]
+    x = list(range(1, len(values) + 1))
+    chart = plot("Z-score", x, zscores, PlotType.LINE)
+    flagged = [v for v, z in zip(values, zscores, strict=True) if abs(z) > z_threshold]
+    return (
+        f"{chart}\nmean: {mean:.4g} std: {std:.4g}\n|z| > {z_threshold} ({len(flagged)}: {flagged})"
+    )
 
 
 def outlier_detection(values: Iterable[float], method: OutlierMethod) -> str:
