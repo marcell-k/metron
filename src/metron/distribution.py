@@ -55,11 +55,13 @@ class FrequencyTable:
             ("cum. rel. freq", self.cum_rel_freq),
         ]
 
-        width = 15
-        header = "|" + "|".join(name.center(width) for name, _ in columns) + "|"
-        separator = "+" + "+".join("-" * width for _ in columns) + "+"
+        widths = [max(len(name), *(len(fmt(v)) for v in values)) + 2 for name, values in columns]
+        header = (
+            "|" + "|".join(n.center(w) for (n, _), w in zip(columns, widths, strict=True)) + "|"
+        )
+        separator = "+" + "+".join("-" * w for w in widths) + "+"
         rows = [
-            "|" + "|".join(fmt(value).center(width) for value in row) + "|"
+            "|" + "|".join(fmt(v).center(w) for v, w in zip(row, widths, strict=True)) + "|"
             for row in zip(*(values for _, values in columns), strict=True)
         ]
         return "\n".join([header, separator, *rows])
@@ -97,15 +99,17 @@ def calculate_zscore(values: Iterable[float]) -> str:
     values = list(values)
     std = calculate_std(values)
     if std == 0:
-        msg = "std must not be above 0"
+        msg = "std must be above 0"
         raise MetronError(msg)
     mean = sum(values) / len(values)
     zscores = [(x - mean) / std for x in values]
-    x = list(range(1, len(values) + 1))
-    chart = plot("Z-score", x, zscores, PlotType.LINE)
+    chart = plot("Z-score distribution", zscores, plot_type=PlotType.HISTOGRAM)
     flagged = [v for v, z in zip(values, zscores, strict=True) if abs(z) > z_threshold]
+    shown = list(map(r, flagged[:10]))
+    more = f", ... +{len(flagged) - 10} more" if len(flagged) > 10 else ""  # noqa: PLR2004
     return (
-        f"{chart}\nmean: {mean:.4g} std: {std:.4g}\n|z| > {z_threshold} ({len(flagged)}: {flagged})"
+        f"{chart}\nmean: {mean:.4g} std: {std:.4g}\n"
+        f"|z| > {z_threshold} ({len(flagged)}): {shown}{more}"
     )
 
 
@@ -124,10 +128,12 @@ def outlier_detection(values: Iterable[float], method: OutlierMethod) -> str:
         lower, upper = median - mad * c, median + mad * c
 
     outliers = [v for v in values if not lower <= v <= upper]
+    shown = list(map(r, outliers[:10]))
+    more = f", ... +{len(outliers) - 10} more" if len(outliers) > 10 else ""  # noqa: PLR2004
     x = list(range(1, len(values) + 1))
     chart = plot(f"Outlier detection, using: {method}", x, values, PlotType.SCATTER)
     return (
         f"{chart}\n"
         f"Median: {median:.4g}   Fences: ({lower:.4g}, {upper:.4g})\n"
-        f"Outliers ({len(outliers)}): {outliers}"
+        f"Outliers ({len(outliers)}): {shown}{more}"
     )

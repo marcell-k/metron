@@ -10,9 +10,9 @@ if TYPE_CHECKING:
 
 
 def fmt(value: object) -> str:
-    """Format cell. Floats to 2 decimals."""
+    """Format cell. Floats to 4 decimals."""
     if isinstance(value, float):
-        return f"{value:.2f}"
+        return f"{value:.4f}"
     return str(value)
 
 
@@ -59,6 +59,7 @@ def bin_layout(values: list[float], nmb_bins: int | None) -> tuple[int, float]:
         iqr = calculate_percentile(values, 75) - calculate_percentile(values, 25)
         step = 2 * iqr / len(values) ** (1 / 3)
         nmb_bins = math.ceil(math.log2(len(values))) + 1 if step == 0 else math.ceil(span / step)
+        nmb_bins = min(nmb_bins, 20)
 
     nmb_bins = max(nmb_bins, 1)
     return nmb_bins, span / nmb_bins
