@@ -35,6 +35,7 @@ class Stats:
     mean: float
     median: float
     mode: float
+    mode_count: int
     var: float  # for entire population
     std: float
     mad: float
@@ -54,10 +55,11 @@ class Stats:
             f"{'Range:':<14} {self.range:>9}",
             f"{'Mean:':<14} {self.mean:>9}",
             f"{'Median:':<14} {self.median:>9}",
-            f"{'Mode:':<14} {self.mode:>9}",
+            f"{'Mode:':<14} {'n/a' if self.mode_count == 1 else self.mode:>9}",
+            f"{'Mode count:':<14} {self.mode_count:>9}",
         ]
         s += "\n".join(lines)
-        s += "\n\nQuartile Summary:\n"
+        s += "\n\nSpread and shape:\n"
         s += Seperator
         lines = [
             f"{'Variance:':<14} {self.var:>9}",
@@ -80,17 +82,13 @@ def descriptive_statistics(data: Sequence[float]) -> Stats:
     if len(data) < 4:  # noqa: PLR2004
         msg = f"data must contain at least 4 data points, got: `{len(list(data))}`"
         raise ParseError(msg)
-    total = 0
+    data = sorted(data)
     n = len(data)
-    minimum = data[0]
-    maximum = data[0]
-    for val in data:
-        minimum = min(minimum, val)
-        maximum = max(maximum, val)
-        total += val
+    total = sum(data)
+    minimum, maximum = data[0], data[-1]
 
     data_range = maximum - minimum
-    mode = Counter(data).most_common()[0][0]
+    mode, mode_count = Counter(data).most_common(1)[0]
     mean = total / n
 
     std = calculate_std(data)
@@ -109,6 +107,7 @@ def descriptive_statistics(data: Sequence[float]) -> Stats:
         r(mean),
         r(median),
         r(mode),
+        mode_count,
         r(var),
         r(std),
         r(mad),
