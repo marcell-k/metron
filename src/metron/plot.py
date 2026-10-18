@@ -235,7 +235,4 @@ def draw_histogram(
     ]
     length = size if horizontal else max(size // 2, 1)
     chart = render(bins, length, horizontal=horizontal, labels=labels)
-    return (
-        f"{chart}\nRange: ({data[0]}, {data[-1]})   Bin width: {step:.4g}\n"
-        "Bins: left-closed [lo, hi), last bin also includes max"
-    )
+    return f"{chart}\nRange: ({r(data[0])}, {r(data[-1])})   Bin width: {step:.4g}"

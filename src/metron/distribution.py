@@ -109,7 +109,7 @@ def calculate_zscore(values: Iterable[float]) -> str:
         (v for v, z in zip(values, zscores, strict=True) if abs(z) > z_threshold),
         key=lambda v: -abs(v - mean),
     )
-    shown = flagged[:MAX_LISTED]
+    shown = list(map(r, flagged[:MAX_LISTED]))
     more = f", ... +{len(flagged) - MAX_LISTED} more" if len(flagged) > MAX_LISTED else ""
     return (
         f"{chart}\nmean: {mean:.4g} std: {std:.4g}\n"
