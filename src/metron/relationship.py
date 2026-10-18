@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from metron.descriptive import Seperator
 from metron.errors import MetronError
+from metron.plot import Figure
 from metron.utils import calculate_std, r
 
 if TYPE_CHECKING:
@@ -105,19 +106,30 @@ def analyze_relationship(x: Collection[float], y: Collection[float]) -> str:
     if len(x) != len(y):
         msg = f"The two variable lens are different, got: {len(x)}, {len(y)}"
         raise MetronError(msg)
+
+    xs, ys = list(x), list(y)
     cov = calculate_covariance(x, y)
     p_corr, p_low, p_upp = confidence_interval(x, y, "pearson")
     s_corr, s_low, s_upp = confidence_interval(x, y, "spearman")
-    r2 = calculate_rsquare(list(x), list(y))
+    r2 = calculate_rsquare(xs, ys)
+    slope, intercept = ols(xs, ys)
+    lo_x, hi_x = min(xs), max(xs)
+    chart = (
+        Figure("Scatter with least-squares fit")
+        .scatter(xs, ys)
+        .line([lo_x, hi_x], [slope * lo_x + intercept, slope * hi_x + intercept], "·")
+        .render()
+    )
 
-    s = "Relationship analysis:\n"
+    s = chart + "\nRelationship analysis:\n"
     s += Seperator
-
     lines = [
         f"{'Covariance:':<14} {r(cov):>9}",
         f"{'Pearson:':<14} {r(p_corr):>9} (`{r(p_low)}`-`{r(p_upp)}`), 95% confidence",
         f"{'Spearman:':<14} {r(s_corr):>9} (`{r(s_low)}`-`{r(s_upp)}`), 95% confidence",
         f"{'R²:':<14} {r(r2):>9}",
+        f"{'Slope:':<14} {r(slope):>9}",
+        f"{'Intercept:':<14} {r(intercept):>9}",
     ]
     s += "\n".join(lines)
     return s

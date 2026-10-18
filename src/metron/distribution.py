@@ -7,13 +7,13 @@ from typing import TYPE_CHECKING
 
 from metron.descriptive import _calculate_mad, calculate_quartile_statistics
 from metron.errors import MetronError
-from metron.plot import PlotType, plot
+from metron.plot import WIDTH, Figure, draw_histogram
 from metron.utils import bin_values, calculate_std, fmt, r
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator
 
-
+MAX_LISTED = 10
 PADDING = 2
 
 
@@ -90,11 +90,11 @@ def calculate_ecdf(values: Iterable[float]) -> str:
     values = sorted(values)
     n = len(values)
     out = [bisect_right(values, v) / n for v in values]
-    return plot("ECDF", values, out, plot_type=PlotType.LINE)
+    return Figure("ECDF").line(values, out).render()
 
 
 def calculate_zscore(values: Iterable[float]) -> str:
-    """Calculate z-score and plot it."""
+    """Calculate z-score and plot its distribution."""
     z_threshold = 3
     values = list(values)
     std = calculate_std(values)
@@ -103,10 +103,14 @@ def calculate_zscore(values: Iterable[float]) -> str:
         raise MetronError(msg)
     mean = sum(values) / len(values)
     zscores = [(x - mean) / std for x in values]
-    chart = plot("Z-score distribution", zscores, plot_type=PlotType.HISTOGRAM)
-    flagged = [v for v, z in zip(values, zscores, strict=True) if abs(z) > z_threshold]
-    shown = list(map(r, flagged[:10]))
-    more = f", ... +{len(flagged) - 10} more" if len(flagged) > 10 else ""  # noqa: PLR2004
+    title = "Z-score distribution".center(WIDTH)
+    chart = f"\n{title}\n{draw_histogram(zscores, size=WIDTH)}\n"
+    flagged = sorted(
+        (v for v, z in zip(values, zscores, strict=True) if abs(z) > z_threshold),
+        key=lambda v: -abs(v - mean),
+    )
+    shown = flagged[:MAX_LISTED]
+    more = f", ... +{len(flagged) - MAX_LISTED} more" if len(flagged) > MAX_LISTED else ""
     return (
         f"{chart}\nmean: {mean:.4g} std: {std:.4g}\n"
         f"|z| > {z_threshold} ({len(flagged)}): {shown}{more}"
@@ -127,11 +131,20 @@ def outlier_detection(values: Iterable[float], method: OutlierMethod) -> str:
             raise MetronError(msg)
         lower, upper = median - mad * c, median + mad * c
 
-    outliers = [v for v in values if not lower <= v <= upper]
-    shown = list(map(r, outliers[:10]))
-    more = f", ... +{len(outliers) - 10} more" if len(outliers) > 10 else ""  # noqa: PLR2004
-    x = list(range(1, len(values) + 1))
-    chart = plot(f"Outlier detection, using: {method}", x, values, PlotType.SCATTER)
+    outliers = sorted(
+        (v for v in values if not lower <= v <= upper),
+        key=lambda v: -abs(v - median),
+    )
+    shown = outliers[:MAX_LISTED]
+    more = f", ... +{len(outliers) - MAX_LISTED} more" if len(outliers) > MAX_LISTED else ""
+    chart = (
+        Figure(f"Outlier detection, using: {method}")
+        .scatter(list(range(1, len(values) + 1)), values)
+        .hline(lower, "┄")
+        .hline(upper, "┄")
+        .hline(median, "─")
+        .render()
+    )
     return (
         f"{chart}\n"
         f"Median: {median:.4g}   Fences: ({lower:.4g}, {upper:.4g})\n"

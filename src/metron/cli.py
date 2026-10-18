@@ -35,7 +35,7 @@ def load(source: str | None, sep: str) -> list[float]:
     elif Path(source).exists():
         raw = Path(source).read_text()
     else:
-        msg = "error in reading"
+        msg = f"file not found: {source}"
         raise ParseError(msg)
     return clean_data(raw, sep)
 
