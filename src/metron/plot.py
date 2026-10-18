@@ -3,7 +3,7 @@
 import math
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from metron.utils import bin_values, r
 
@@ -170,7 +170,10 @@ def draw_scatter(x: Sequence[float], y: Sequence[float]) -> str:
 
     peak = max(max(line) for line in counts)
     top = len(DENSITY) - 1
-    canvas = [[DENSITY[-(-c * top // peak)] if c else " " for c in line] for line in counts]
+    canvas = cast(
+        "list[list[str]]",
+        [[DENSITY[-(-c * top // peak)] if c else " " for c in line] for line in counts],
+    )
 
     return _frame(canvas, (min_x, max_x, min_y, max_y))
 

@@ -86,6 +86,10 @@ def outlier(
 
 
 @app.command()
-def relationship(var1: Source = None, var2: Source = None, sep: Sep = ",") -> None:
-    """Frequency table."""
+def relationship(
+    var1: Annotated[str, typer.Argument(help="First variable file.")],
+    var2: Annotated[str, typer.Argument(help="Second variable file.")],
+    sep: Sep = ",",
+) -> None:
+    """Covariance, Pearson, Spearman, R²."""
     typer.echo(analyze_relationship(load(var1, sep), load(var2, sep)))

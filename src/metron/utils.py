@@ -18,6 +18,7 @@ def fmt(value: object) -> str:
 
 def clean_data(line: str, sep: str = ",") -> list[float]:
     """Split and clean data by seperator."""
+    sep = sep.encode().decode("unicode_escape")  # "\\n" -> "\n"
     return [float(x) for x in line.strip().split(sep=sep) if x.strip()]
 
 
