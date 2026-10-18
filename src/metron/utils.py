@@ -31,6 +31,8 @@ def calculate_percentile(values: Sequence[float], percentile: float = 25) -> flo
     if not 0 < percentile <= 100:  # noqa: PLR2004
         msg = f"percentile must be between 0 and 100, got: `{percentile}`"
         raise ParseError(msg)
+    if percentile == 100:  # noqa: PLR2004
+        return 1.0
     int_index, frac_index = divmod((len(values) - 1) * percentile / 100, 1)
     int_index = int(int_index)
     return values[int_index] + (values[int_index + 1] - values[int_index]) * frac_index

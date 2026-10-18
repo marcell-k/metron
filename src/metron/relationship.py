@@ -23,11 +23,7 @@ def calculate_covariance(x: Collection[float], y: Collection[float]) -> float:
 
 def pearson_correlation(x: Collection[float], y: Collection[float]) -> float:
     """Pearson correlation."""
-    cov = calculate_covariance(x, y)
-
-    std_x = calculate_std(x)
-    std_y = calculate_std(y)
-    return cov / (std_x * std_y)
+    return pearson_correlation(_rank(list(x)), _rank(list(y)))
 
 
 def spearman_correlation(x: Collection[float], y: Collection[float]) -> float:
@@ -58,12 +54,19 @@ def confidence_interval(
     return rho, lower, upper
 
 
-def _rank(v: Sequence[float]) -> list[int]:
-    ranks = [0] * len(v)
+def _rank(v: Sequence[float]) -> list[float]:
+    """Average ranks, 1-based. Tied values share mean of their positions."""
     order = sorted(range(len(v)), key=v.__getitem__)
-    for rank, i in enumerate(order, 1):
-        ranks[i] = rank
-        # print(f"r={r} i={i} v[i]={v[i]} ranks={ranks}")  # noqa: ERA001
+    ranks = [0.0] * len(v)
+    i = 0
+    while i < len(order):
+        j = i
+        while j + 1 < len(order) and v[order[j + 1]] == v[order[i]]:
+            j += 1
+        avg = (i + j) / 2 + 1
+        for k in range(i, j + 1):
+            ranks[order[k]] = avg
+        i = j + 1
     return ranks
 
 

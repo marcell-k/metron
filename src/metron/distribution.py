@@ -1,6 +1,5 @@
 """Distribution and frequency."""
 
-import math
 from bisect import bisect_right
 from dataclasses import dataclass, fields
 from enum import StrEnum
@@ -9,7 +8,7 @@ from typing import TYPE_CHECKING
 from metron.descriptive import _calculate_mad, calculate_quartile_statistics
 from metron.errors import MetronError
 from metron.plot import PlotType, plot
-from metron.utils import bin_values, fmt, r
+from metron.utils import bin_values, calculate_std, fmt, r
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator
@@ -48,7 +47,6 @@ class FrequencyTable:
 
     def __str__(self) -> str:
         """Visualize table."""
-        s = ""
         columns = [
             ("class", self._class),
             ("freq", self.freq),
@@ -60,7 +58,6 @@ class FrequencyTable:
         width = 15
         header = "|" + "|".join(name.center(width) for name, _ in columns) + "|"
         separator = "+" + "+".join("-" * width for _ in columns) + "+"
-        s += header + "\n"
         rows = [
             "|" + "|".join(fmt(value).center(width) for value in row) + "|"
             for row in zip(*(values for _, values in columns), strict=True)

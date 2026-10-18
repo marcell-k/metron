@@ -77,7 +77,7 @@ class Stats:
 
 def descriptive_statistics(data: Sequence[float]) -> Stats:
     """Calculate and return descriptive statistics."""
-    if len(list(data)) < 4:  # noqa: PLR2004
+    if len(data) < 4:  # noqa: PLR2004
         msg = f"data must contain at least 4 data points, got: `{len(list(data))}`"
         raise ParseError(msg)
     total = 0
@@ -140,6 +140,7 @@ def _calculate_median(values: Sequence[float]) -> float:
 
 def calculate_quartile_statistics(values: Sequence[float]) -> QuartileSummary:
     """Calculate quartile statistics summary."""
+    values = sorted(values)
     q1 = calculate_percentile(values, 25)
     q3 = calculate_percentile(values, 75)
     iqr = q3 - q1
