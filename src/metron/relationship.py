@@ -77,29 +77,15 @@ def _fisher_transform(value: float) -> float:
     return 0.5 * math.log((1 + value) / (1 - value))
 
 
-def ols(
-    x: Sequence[float], y: Sequence[float], lr: float = 0.1, iters: int = 1000
-) -> tuple[float, float]:
-    """Return slope, intercept of least-squares line."""
-    n = len(y)
-    mx = sum(x) / n
-    sx = (sum((xi - mx) ** 2 for xi in x) / n) ** 0.5
-    xs = [(xi - mx) / sx for xi in x]
-
-    def grad(m: float, b: float) -> tuple[float, float]:
-        err = [b + m * xi - yi for xi, yi in zip(xs, y, strict=True)]
-        dm = 2 / n * sum(e * xi for e, xi in zip(err, xs, strict=True))
-        db = 2 / n * sum(err)
-        return dm, db
-
-    m, b = 0.0, sum(y) / n  # flat line at mean
-    for _ in range(iters):
-        dm, db = grad(m, b)
-        m -= lr * dm
-        b -= lr * db
-
-    # undo scaling: y = m*(x-mx)/sx + b
-    return m / sx, b - m * mx / sx
+def ols(x: Sequence[float], y: Sequence[float]) -> tuple[float, float]:
+    """Return slope, intercept."""
+    var_x = calculate_std(x) ** 2
+    if var_x == 0:
+        msg = "x has zero variance, cannot fit line"
+        raise MetronError(msg)
+    slope = calculate_covariance(x, y) / var_x
+    intercept = sum(y) / len(y) - slope * sum(x) / len(x)
+    return slope, intercept
 
 
 def calculate_rsquare(xs: Sequence[float], ys: Sequence[float]) -> float:
