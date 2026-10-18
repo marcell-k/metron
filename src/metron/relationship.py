@@ -18,20 +18,22 @@ def calculate_covariance(x: Collection[float], y: Collection[float]) -> float:
     Formula: `Cov (X,Y) = E[(X-E[X])(Y-E[Y])] = E[XY]-E[X]E[Y].`
     """
     mean_x, mean_y = sum(x) / len(x), sum(y) / len(y)
-    return sum((x - mean_x) * (y - mean_y) for x, y in zip(x, y, strict=True)) / len(x)
+    return sum((a - mean_x) * (b - mean_y) for a, b in zip(x, y, strict=True)) / len(x)
 
 
 def pearson_correlation(x: Collection[float], y: Collection[float]) -> float:
     """Pearson correlation."""
-    return pearson_correlation(_rank(list(x)), _rank(list(y)))
+    std_x, std_y = calculate_std(x), calculate_std(y)
+    if std_x == 0 or std_y == 0:
+        msg = "zero variance, correlation undefined"
+        raise MetronError(msg)
+    rho = calculate_covariance(x, y) / (std_x * std_y)
+    return max(-1.0, min(1.0, rho))
 
 
 def spearman_correlation(x: Collection[float], y: Collection[float]) -> float:
     """Spearman correlation, uses ranks."""
-    rank_x = _rank(list(x))
-    rank_y = _rank(list(y))
-    diffs = sum((x - y) ** 2 for x, y in zip(rank_x, rank_y, strict=True))
-    return 1 - (6 * diffs) / (len(x) * (len(x) ** 2 - 1))
+    return pearson_correlation(_rank(list(x)), _rank(list(y)))  # handles ties
 
 
 def confidence_interval(
@@ -101,7 +103,7 @@ def calculate_rsquare(xs: Sequence[float], ys: Sequence[float]) -> float:
 def analyze_relationship(x: Collection[float], y: Collection[float]) -> str:
     """Entry point for the full relationship analyzation."""
     if len(x) != len(y):
-        msg = f"The two variable lens are different, got: {len(x), len(y)}"
+        msg = f"The two variable lens are different, got: {len(x)}, {len(y)}"
         raise MetronError(msg)
     cov = calculate_covariance(x, y)
     p_corr, p_low, p_upp = confidence_interval(x, y, "pearson")
