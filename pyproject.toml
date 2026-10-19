@@ -1,9 +1,9 @@
 [project]
 name = "metron"
 version = "0.1.0"
-description = "Add your description here"
+description = "cli for simple statistics"
 readme = "README.md"
-authors = [{ name = "Kele98-star", email = "kele.marcell.mail@gmail.com" }]
+authors = [{ name = "Kele98-star" }]
 requires-python = ">=3.15"
 dependencies = ["typer>=0.27.3"]
 
