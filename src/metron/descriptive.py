@@ -1,8 +1,9 @@
 """Descriptive Statistics."""
 
+import math
 from collections import Counter
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 from metron.errors import ParseError
 from metron.utils import calculate_percentile, calculate_std, r
@@ -43,6 +44,7 @@ class Stats:
     skewness: float
     kurtosis: float
 
+    @override
     def __str__(self) -> str:
         """Visualize stats."""
         s = "Descriptive statistics:\n"
@@ -151,7 +153,7 @@ def _calculate_skewness(values: Sequence[float], mean: float, std: float) -> flo
     """Calcualte Adjusted Fisher-Pearson (Small-Sample Bias Correction)."""
     n = len(values)
     moment_3 = sum((x - mean) ** 3 for x in values) / n
-    correction = (n * (n - 1)) ** 0.5 / (n - 2)
+    correction = math.sqrt(n * (n - 1)) / (n - 2)
     return correction * moment_3 / std**3
 
 

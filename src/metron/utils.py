@@ -43,7 +43,7 @@ def calculate_std(values: Collection[float]) -> float:
     """Calculate std."""
     mean = sum(values) / len(values)
     var = sum((x - mean) ** 2 for x in values) / len(values)
-    return var**0.5
+    return math.sqrt(var)
 
 
 # ----- histogram binning -----

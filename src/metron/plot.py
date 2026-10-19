@@ -5,6 +5,7 @@ from enum import StrEnum
 from itertools import pairwise
 from typing import TYPE_CHECKING, Self
 
+from metron.errors import MetronError
 from metron.utils import bin_values, r
 
 if TYPE_CHECKING:
@@ -201,7 +202,10 @@ def render(
         return max(1, round(count / peak * size)) if count else 0
 
     if horizontal:
-        names = list(labels) if labels else [str(i) for i in bins]
+        names = list(labels) if labels is not None else [str(i) for i in bins]
+        if not names:
+            msg = "labels must not be empty"
+            raise MetronError(msg)
         pad = max(map(len, names))
         lines = [
             f"{name:>{pad}} │{BAR * scale(count)} {count}"

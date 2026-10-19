@@ -3,7 +3,7 @@
 from bisect import bisect_right
 from dataclasses import dataclass, fields
 from enum import StrEnum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast, override
 
 from metron.descriptive import _calculate_mad, calculate_quartile_statistics
 from metron.errors import MetronError
@@ -43,8 +43,9 @@ class FrequencyTable:
     def __iter__(self) -> Iterator[list[str | int | float]]:
         """Iterate over fields and yield values."""
         for f in fields(self):
-            yield getattr(self, f.name)
+            yield cast("list[str | int | float]", getattr(self, f.name))
 
+    @override
     def __str__(self) -> str:
         """Visualize table."""
         columns = [
